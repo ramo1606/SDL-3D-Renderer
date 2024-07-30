@@ -23,9 +23,31 @@ include_directories(libs/rAudio/src)
 # Add minunit
 include_directories(lib/minunit)
 
+# Explicitly list header files
+set(HEADER_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/display.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/mesh.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/triangle.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/vector.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/array.h
+)
+
+# Explicitly list source files
+set(SOURCE_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/display.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/mesh.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/triangle.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vector.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/array.c
+)
+
 # Add project source files
-file(GLOB_RECURSE SOURCE_FILES src/*.c)
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
+
+# Create source groups (filters for Visual Studio)
+source_group("Header Files" FILES ${HEADER_FILES})
+source_group("Source Files" FILES ${SOURCE_FILES})
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME}
