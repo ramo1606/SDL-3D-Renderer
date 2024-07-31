@@ -3,14 +3,18 @@
 
 #include "vector.h"
 
-typedef struct {
+/* Structure to represent a face with three vertices */
+typedef struct
+{
     int a;
     int b;
     int c;
 } face_t;
 
-typedef struct {
+/* Structure to represent a triangle with three 2D points */
+typedef struct
+{
     vec2_t points[3];
 } triangle_t;
 
-#endif
+#endif /* TRIANGLE_H */
