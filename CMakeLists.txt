@@ -8,21 +8,6 @@ set(SDL2_DIR "C:/SDL2")  # Adjust this path as needed
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
-# Add stb
-include_directories(libs/stb)
-
-# Add imgui-docking
-include_directories(libs/imgui)
-
-# Add glm
-add_subdirectory(libs/glm)
-
-# Add rAudio
-include_directories(libs/rAudio/src)
-
-# Add minunit
-include_directories(lib/minunit)
-
 # Explicitly list header files
 set(HEADER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/display.h
@@ -52,12 +37,7 @@ source_group("Source Files" FILES ${SOURCE_FILES})
 # Link libraries
 target_link_libraries(${PROJECT_NAME}
     ${SDL2_LIBRARIES}
-    glm
 )
 
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE include)
-
-# Add tests
-#add_executable(run_tests tests/test_vector.c)
-#target_link_libraries(run_tests ${PROJECT_NAME})
