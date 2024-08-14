@@ -1,4 +1,4 @@
-#include "display.h"
+﻿#include "display.h"
 
 /* Global variables */
 SDL_Window* window = NULL;
@@ -97,6 +97,92 @@ void draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t colo
     draw_line(x0, y0, x1, y1, color);
     draw_line(x1, y1, x2, y2, color);
     draw_line(x2, y2, x0, y0, color);
+}
+
+/* Function to swap two integers */
+void int_swap(int* a, int* b)
+{
+	int temp = *a;
+	*a = *b;
+	*b = temp;
+}
+
+void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color)
+{
+    // Calculate the inverse slopes
+	float inv_slope_1 = (float)(x1 - x0) / (float)(y1 - y0);
+	float inv_slope_2 = (float)(x2 - x0) / (float)(y2 - y0);
+
+    // Start x_start anmd x_end from the top vertex (x0, y0)
+	float x_start = x0;
+	float x_end = x0;
+
+    // Loop through the scanlines from top to bottom
+	for (int scanline_y = y0; scanline_y <= y1; scanline_y++)
+	{
+		draw_line(round(x_start), scanline_y, round(x_end), scanline_y, color);
+        x_start += inv_slope_1;
+        x_end += inv_slope_2;
+	}
+}
+
+void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color)
+{
+	// Calculate the inverse slopes
+	float inv_slope_1 = (float)(x2 - x0) / (float)(y2 - y0);
+	float inv_slope_2 = (float)(x2 - x1) / (float)(y2 - y1);
+
+    // Start x_start anmd x_end from the bottom vertex (x2, y2)
+	float x_start = x2;
+	float x_end = x2;
+
+    // Loop through the scanlines from bottom to top
+	for (int scanline_y = y2; scanline_y > y0; scanline_y--)
+	{
+		draw_line(round(x_start), scanline_y, round(x_end), scanline_y, color);
+        x_start -= inv_slope_1;
+        x_end -= inv_slope_2;
+	}
+}
+
+void draw_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color)
+{
+	/* Sort the vertices, t0, t1, t2 lower−to−upper (bubblesort yay!) */
+	if (y0 > y1)
+	{
+        int_swap(&y0, &y1);
+        int_swap(&x0, &x1);
+	}
+
+	if (y1 > y2)
+	{
+        int_swap(&y2, &y1);
+        int_swap(&x2, &x1);
+	}
+
+	if (y0 > y1)
+	{
+        int_swap(&y0, &y1);
+        int_swap(&x0, &x1);
+	}
+
+    if(y1 == y2)
+	{
+		fill_flat_bottom_triangle(x0, y0, x1, y1, x2, y2, color);
+	}
+	else if(y0 == y1)
+	{
+		fill_flat_top_triangle(x0, y0, x1, y1, x2, y2, color);
+	}
+    else 
+    {
+        // Calculate the new vertex (Mx, My) using triangle similarity
+        int Mx = x0 + ((float)(y1 - y0) / (float)(y2 - y0)) * (x2 - x0);
+        int My = y1;
+
+        fill_flat_bottom_triangle(x0, y0, x1, y1, Mx, My, color);
+        fill_flat_top_triangle(x1, y1, Mx, My, x2, y2, color);
+    }
 }
 
 /* Function to draw a rectangle */
