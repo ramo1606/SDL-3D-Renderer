@@ -189,3 +189,28 @@ vec3_t vec3_rotate_z(vec3_t v, float angle)
     };
     return rotated_vector;
 }
+
+/* Convert vector 3 to vector 4 */
+vec4_t vec4_from_vec3(vec3_t v)
+{
+	vec4_t result =
+	{
+		.x = v.x,
+		.y = v.y,
+		.z = v.z,
+		.w = 1.f
+	};
+    return result;
+}
+
+/* Convert vector 4 to vector 3 */
+vec3_t vec3_from_vec4(vec4_t v)
+{
+	vec3_t result =
+	{
+		.x = v.x,
+		.y = v.y,
+		.z = v.z
+	};
+    return result;
+}
