@@ -14,7 +14,12 @@ set(HEADER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/mesh.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/triangle.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/vector.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/light.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/matrix.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/swap.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/texture.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/array.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/upng.h
 )
 
 # Explicitly list source files
@@ -24,7 +29,12 @@ set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/mesh.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/triangle.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vector.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/light.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/matrix.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/swap.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/texture.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/array.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/upng.c
 )
 
 # Add project source files
