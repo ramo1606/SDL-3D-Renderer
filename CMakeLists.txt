@@ -20,6 +20,7 @@ set(HEADER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/texture.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/array.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/upng.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/camera.h
 )
 
 # Explicitly list source files
@@ -35,6 +36,7 @@ set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/texture.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/array.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/upng.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/camera.c
 )
 
 # Add project source files

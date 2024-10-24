@@ -6,6 +6,7 @@
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 uint32_t* color_buffer = NULL;
+float* depth_buffer = NULL;
 SDL_Texture* color_buffer_texture = NULL;
 int window_width = 800;
 int window_height = 600;
@@ -101,86 +102,43 @@ void draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t colo
     draw_line(x2, y2, x0, y0, color);
 }
 
-void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color)
-{
-    // Calculate the inverse slopes
-	float inv_slope_1 = (float)(x1 - x0) / (float)(y1 - y0);
-	float inv_slope_2 = (float)(x2 - x0) / (float)(y2 - y0);
-
-    // Start x_start anmd x_end from the top vertex (x0, y0)
-	float x_start = x0;
-	float x_end = x0;
-
-    // Loop through the scanlines from top to bottom
-	for (int scanline_y = y0; scanline_y <= y1; scanline_y++)
-	{
-		draw_line(round(x_start), scanline_y, round(x_end), scanline_y, color);
-        x_start += inv_slope_1;
-        x_end += inv_slope_2;
-	}
-}
-
-void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color)
-{
-	// Calculate the inverse slopes
-	float inv_slope_1 = (float)(x2 - x0) / (float)(y2 - y0);
-	float inv_slope_2 = (float)(x2 - x1) / (float)(y2 - y1);
-
-    // Start x_start anmd x_end from the bottom vertex (x2, y2)
-	float x_start = x2;
-	float x_end = x2;
-
-    // Loop through the scanlines from bottom to top
-	for (int scanline_y = y2; scanline_y > y0; scanline_y--)
-	{
-		draw_line(round(x_start), scanline_y, round(x_end), scanline_y, color);
-        x_start -= inv_slope_1;
-        x_end -= inv_slope_2;
-	}
-}
-
-void draw_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color)
-{
-    // We need to sort the vertices by y-coordinate ascending (y0 < y1 < y2)
-	/* Sort the vertices, t0, t1, t2 lower−to−upper (bubblesort yay!) */
-	if (y0 > y1)
-	{
-        int_swap(&y0, &y1);
-        int_swap(&x0, &x1);
-	}
-
-	if (y1 > y2)
-	{
-        int_swap(&y2, &y1);
-        int_swap(&x2, &x1);
-	}
-
-	if (y0 > y1)
-	{
-        int_swap(&y0, &y1);
-        int_swap(&x0, &x1);
-	}
-
-    if(y1 == y2)
-	{
-        // Draw flat-bottom triangle
-		fill_flat_bottom_triangle(x0, y0, x1, y1, x2, y2, color);
-	}
-	else if(y0 == y1)
-	{
-        // Draw flat-top triangle
-		fill_flat_top_triangle(x0, y0, x1, y1, x2, y2, color);
-	}
-    else 
-    {
-        // Calculate the new vertex (Mx, My) using triangle similarity
-        int Mx = x0 + ((float)(y1 - y0) / (float)(y2 - y0)) * (x2 - x0);
-        int My = y1;
-
-        fill_flat_bottom_triangle(x0, y0, x1, y1, Mx, My, color);
-        fill_flat_top_triangle(x1, y1, Mx, My, x2, y2, color);
-    }
-}
+//void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color)
+//{
+//    // Calculate the inverse slopes
+//	float inv_slope_1 = (float)(x1 - x0) / (float)(y1 - y0);
+//	float inv_slope_2 = (float)(x2 - x0) / (float)(y2 - y0);
+//
+//    // Start x_start anmd x_end from the top vertex (x0, y0)
+//	float x_start = x0;
+//	float x_end = x0;
+//
+//    // Loop through the scanlines from top to bottom
+//	for (int scanline_y = y0; scanline_y <= y1; scanline_y++)
+//	{
+//		draw_line(round(x_start), scanline_y, round(x_end), scanline_y, color);
+//        x_start += inv_slope_1;
+//        x_end += inv_slope_2;
+//	}
+//}
+//
+//void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color)
+//{
+//	// Calculate the inverse slopes
+//	float inv_slope_1 = (float)(x2 - x0) / (float)(y2 - y0);
+//	float inv_slope_2 = (float)(x2 - x1) / (float)(y2 - y1);
+//
+//    // Start x_start anmd x_end from the bottom vertex (x2, y2)
+//	float x_start = x2;
+//	float x_end = x2;
+//
+//    // Loop through the scanlines from bottom to top
+//	for (int scanline_y = y2; scanline_y > y0; scanline_y--)
+//	{
+//		draw_line(round(x_start), scanline_y, round(x_end), scanline_y, color);
+//        x_start -= inv_slope_1;
+//        x_end -= inv_slope_2;
+//	}
+//}
 
 vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p)
 {
@@ -204,6 +162,121 @@ vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p)
 	float gamma = 1.0f - alpha - beta;
 
 	return (vec3_t) { alpha, beta, gamma };
+}
+
+void draw_triangle_pixel(int x, int y, uint32_t color, vec4_t point_a, vec4_t point_b, vec4_t point_c)
+{
+	vec2_t p = { x, y };
+	vec2_t a = vec2_from_vec4(point_a);
+	vec2_t b = vec2_from_vec4(point_b);
+	vec2_t c = vec2_from_vec4(point_c);
+
+	vec3_t weights = barycentric_weights(a, b, c, p);
+
+	float alpha = weights.x;
+	float beta = weights.y;
+	float gamma = weights.z;
+
+	float interpolated_reciprocal_w = (1.0f / point_a.w) * alpha + (1.0f / point_b.w) * beta + (1.0f / point_c.w) * gamma;
+
+	interpolated_reciprocal_w = 1.0f - interpolated_reciprocal_w;
+
+	if (interpolated_reciprocal_w < depth_buffer[(window_width * y) + x])
+	{
+		draw_pixel(x, y, color);
+		depth_buffer[(window_width * y) + x] = interpolated_reciprocal_w;
+	}
+}
+
+void draw_filled_triangle(
+	int x0, int y0, float z0, float w0,
+	int x1, int y1, float z1, float w1,
+	int x2, int y2, float z2, float w2,
+	uint32_t color)
+{
+    // We need to sort the vertices by y-coordinate ascending (y0 < y1 < y2)
+	/* Sort the vertices, t0, t1, t2 lower−to−upper (bubblesort yay!) */
+	if (y0 > y1)
+	{
+        int_swap(&y0, &y1);
+        int_swap(&x0, &x1);
+		float_swap(&z0, &z1);
+		float_swap(&w0, &w1);
+	}
+
+	if (y1 > y2)
+	{
+        int_swap(&y2, &y1);
+        int_swap(&x2, &x1);
+		float_swap(&z2, &z1);
+		float_swap(&w2, &w1);
+	}
+
+	if (y0 > y1)
+	{
+        int_swap(&y0, &y1);
+        int_swap(&x0, &x1);
+		float_swap(&z0, &z1);
+		float_swap(&w0, &w1);
+	}
+
+	/* Create vector points after we sort the vertices */
+	vec4_t point_a = { x0, y0, z0, w0 };
+	vec4_t point_b = { x1, y1, z1, w1 };
+	vec4_t point_c = { x2, y2, z2, w2 };
+
+	/* Render de upper part of the triangle (Flat-Bottom) */
+	float inv_slope_1 = 0.f;
+	float inv_slope_2 = 0.f;
+
+	if (y1 - y0 != 0) inv_slope_1 = (float)(x1 - x0) / fabs(y1 - y0);
+	if (y2 - y0 != 0) inv_slope_2 = (float)(x2 - x0) / fabs(y2 - y0);
+
+	if (y1 - y0 != 0)
+	{
+		for (int y = y0; y <= y1; y++)
+		{
+			int start_x = x1 + (y - y1) * inv_slope_1;
+			int end_x = x0 + (y - y0) * inv_slope_2;
+
+			if (start_x > end_x)
+			{
+				int_swap(&start_x, &end_x);     // swap if start_x is to the right of end_x
+			}
+
+			for (int x = start_x; x < end_x; x++)
+			{
+				draw_triangle_pixel(x, y, color, point_a, point_b, point_c);
+			}
+
+		}
+	}
+
+	/* Render de bottom part of the triangle (Flat-Top) */
+	inv_slope_1 = 0.f;
+	inv_slope_2 = 0.f;
+
+	if (y2 - y1 != 0) inv_slope_1 = (float)(x2 - x1) / fabs(y2 - y1);
+	if (y2 - y0 != 0) inv_slope_2 = (float)(x2 - x0) / fabs(y2 - y0);
+
+	if (y2 - y1 != 0)
+	{
+		for (int y = y1; y <= y2; y++)
+		{
+			int start_x = x1 + (y - y1) * inv_slope_1;
+			int end_x = x0 + (y - y0) * inv_slope_2;
+
+			if (start_x > end_x)
+			{
+				int_swap(&start_x, &end_x);     // swap if start_x is to the right of end_x
+			}
+
+			for (int x = start_x; x < end_x; x++)
+			{
+				draw_triangle_pixel(x, y, color, point_a, point_b, point_c);
+			}
+		}
+	}
 }
 
 /* Function to draw the textured pixel at position x and y using interpolation */
@@ -245,7 +318,18 @@ void draw_texel(
     // Get the color from the texture
 	uint32_t texel_color = texture[(tex_width * tex_y) + tex_x];
 
-	draw_pixel(x, y, texel_color);
+	// Adjust the 1/w so the pixels that are closer to the camera have a smaller value
+	interpolated_reciprocal_w = 1.0f - interpolated_reciprocal_w;
+
+	// Check if the current pixel is closer to the camera than the previous one
+	if (interpolated_reciprocal_w < depth_buffer[(window_width * y) + x])
+	{
+		// Draw the pixel at position x and y with the texel color
+		draw_pixel(x, y, texel_color);
+
+		// Update the depth buffer with the interpolated reciprocal w
+		depth_buffer[(window_width * y) + x] = interpolated_reciprocal_w;
+	}
 }
 
 /* Function to draw a textured triangle */
@@ -388,6 +472,15 @@ void clear_color_buffer(uint32_t color)
             color_buffer[(window_width * y) + x] = color;
         }
     }
+}
+
+/* Function to clear the depth buffer */
+void clear_depth_buffer(void)
+{
+	for (int i = 0; i < window_width * window_height; i++)
+	{
+		depth_buffer[i] = 1.0f;
+	}
 }
 
 /* Function to destroy the window */
