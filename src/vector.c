@@ -154,6 +154,11 @@ void vec3_normalize(vec3_t* v)
     v->z /= length;
 }
 
+vec3_t vec3_clone(vec3_t* v)
+{
+	return (vec3_t) { .x = v->x, .y = v->y, .z = v->z };
+}
+
 /* Rotate a 3D vector around the X-axis */
 vec3_t vec3_rotate_x(vec3_t v, float angle)
 {

@@ -9,6 +9,7 @@
 #include "display.h"
 #include "vector.h"
 #include "matrix.h"
+#include "clipping.h"
 #include "light.h"
 #include "mesh.h"
 
@@ -50,16 +51,19 @@ void setup(void)
 	float fov = M_PI / 3.0f;  // 60 degrees or 180/3 degrees
 	float aspect = (float)window_height / (float)window_width;
 	float near = 0.1f;
-	float far = 100.f;
+	float far = 20.f;
 	projection_matrix = mat4_make_perspective(fov, aspect, near, far);
+
+	// Initialize frustum planes with a point and a normal vector
+    init_frustum_planes(fov, near, far);
 
 	// Manually load the hardcoded texture data from the static array
     //mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
 
     /* Loads the vertex and face values for the mesh data structure */
 	//load_cube_mesh_data();
-	load_png_texture_data("../assets/textures/drone.png");
-    load_obj_file_data("../assets/obj/drone.obj");
+	load_png_texture_data("../assets/textures/cube.png");
+    load_obj_file_data("../assets/obj/cube.obj");
 }
 
 /* Poll system events and handle keyboard input */
@@ -239,6 +243,44 @@ void update(void)
             {
                 continue;
             }
+        }
+
+		/* Create a polygon from the original transformed triangle to be clipped */
+        polygon_t polygon = create_polygon_from_triangle(
+                            vec3_from_vec4(transformed_vertices[0]),
+                            vec3_from_vec4(transformed_vertices[1]),
+                            vec3_from_vec4(transformed_vertices[2])
+                            );
+
+		// Clip the polygon against the frustum planes
+        clip_polygon(&polygon);
+
+		printf("Num vertices after clipping: %d\n", polygon.num_vertices);
+
+        for (int i = 0; i < (polygon.num_vertices - 2); i++) 
+        {
+			vec3_t v0 = polygon.vertices[0];
+			vec3_t v1 = polygon.vertices[i + 1];
+			vec3_t v2 = polygon.vertices[i + 2];
+
+			/* Create a new face from the clipped polygon */
+			face_t clipped_face = {
+				.a = array_length(mesh.vertices),
+				.b = array_length(mesh.vertices) + 1,
+				.c = array_length(mesh.vertices) + 2,
+				.a_uv = mesh_face.a_uv,
+				.b_uv = mesh_face.b_uv,
+				.c_uv = mesh_face.c_uv,
+				.color = mesh_face.color
+			};
+
+			/* Push the new vertices to the mesh */
+			array_push(mesh.vertices, v0);
+			array_push(mesh.vertices, v1);
+			array_push(mesh.vertices, v2);
+
+			/* Push the new face to the mesh */
+			array_push(mesh.faces, clipped_face);
         }
 
 		vec4_t projected_points[3];

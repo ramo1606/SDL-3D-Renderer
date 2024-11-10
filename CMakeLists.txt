@@ -21,6 +21,7 @@ set(HEADER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/array.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/upng.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/camera.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/clipping.h
 )
 
 # Explicitly list source files
@@ -37,6 +38,7 @@ set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/array.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/upng.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/camera.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/clipping.c
 )
 
 # Add project source files
