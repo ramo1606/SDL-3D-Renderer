@@ -50,7 +50,7 @@ void setup(void)
 	// Initialize the perspective projection matrix
 	float fov = M_PI / 3.0f;  // 60 degrees or 180/3 degrees
 	float aspect = (float)window_height / (float)window_width;
-	float near = 0.1f;
+	float near = 1.0f;
 	float far = 20.f;
 	projection_matrix = mat4_make_perspective(fov, aspect, near, far);
 
@@ -138,9 +138,9 @@ void update(void)
     //triangles_to_render = NULL;
 
 	// Change the mesh scale, rotation, and translation values per animation frame
-    //mesh.rotation.x += 0.3f * delta_time;
-    //mesh.rotation.y += 0.3f * delta_time;
-    //mesh.rotation.z += 0.3f * delta_time;*/
+    mesh.rotation.x += 0.0f * delta_time;
+    mesh.rotation.y += 0.0f * delta_time;
+    mesh.rotation.z += 0.0f * delta_time;
 
 	//mesh.scale.x += 0.002f * delta_time;
 	//mesh.scale.y += 0.002f * delta_time;
@@ -169,10 +169,10 @@ void update(void)
 
 	// Create scale, rotation, and translation matrices that will be applied to the mesh vertices
 	mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+    mat4_t translation_matrix = mat4_make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
 	mat4_t rotation_matrix_x = mat4_make_rotation_x(mesh.rotation.x);
 	mat4_t rotation_matrix_y = mat4_make_rotation_y(mesh.rotation.y);
 	mat4_t rotation_matrix_z = mat4_make_rotation_z(mesh.rotation.z);
-	mat4_t translation_matrix = mat4_make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
 
 
     /* Loop all triangle faces of our mesh */
@@ -257,31 +257,31 @@ void update(void)
 
 		printf("Num vertices after clipping: %d\n", polygon.num_vertices);
 
-        for (int i = 0; i < (polygon.num_vertices - 2); i++) 
-        {
-			vec3_t v0 = polygon.vertices[0];
-			vec3_t v1 = polygon.vertices[i + 1];
-			vec3_t v2 = polygon.vertices[i + 2];
+   //     for (int i = 0; i < (polygon.num_vertices - 2); i++) 
+   //     {
+			//vec3_t v0 = polygon.vertices[0];
+			//vec3_t v1 = polygon.vertices[i + 1];
+			//vec3_t v2 = polygon.vertices[i + 2];
 
-			/* Create a new face from the clipped polygon */
-			face_t clipped_face = {
-				.a = array_length(mesh.vertices),
-				.b = array_length(mesh.vertices) + 1,
-				.c = array_length(mesh.vertices) + 2,
-				.a_uv = mesh_face.a_uv,
-				.b_uv = mesh_face.b_uv,
-				.c_uv = mesh_face.c_uv,
-				.color = mesh_face.color
-			};
+			///* Create a new face from the clipped polygon */
+			//face_t clipped_face = {
+			//	.a = array_length(mesh.vertices),
+			//	.b = array_length(mesh.vertices) + 1,
+			//	.c = array_length(mesh.vertices) + 2,
+			//	.a_uv = mesh_face.a_uv,
+			//	.b_uv = mesh_face.b_uv,
+			//	.c_uv = mesh_face.c_uv,
+			//	.color = mesh_face.color
+			//};
 
-			/* Push the new vertices to the mesh */
-			array_push(mesh.vertices, v0);
-			array_push(mesh.vertices, v1);
-			array_push(mesh.vertices, v2);
+			///* Push the new vertices to the mesh */
+			//array_push(mesh.vertices, v0);
+			//array_push(mesh.vertices, v1);
+			//array_push(mesh.vertices, v2);
 
-			/* Push the new face to the mesh */
-			array_push(mesh.faces, clipped_face);
-        }
+			///* Push the new face to the mesh */
+			//array_push(mesh.faces, clipped_face);
+   //     }
 
 		vec4_t projected_points[3];
 
@@ -291,12 +291,20 @@ void update(void)
             /* Project the current vertex */
             projected_points[j] = mat4_mul_vec4_project(projection_matrix, transformed_vertices[j]);
 
-            // Scale into the view
-            projected_points[j].x *= 0.5f * window_width;
-            projected_points[j].y *= 0.5f * window_height;
+			// Perform perspective division
+            if (projected_points[j].w != 0) 
+            {
+				projected_points[j].x /= projected_points[j].w;
+				projected_points[j].y /= projected_points[j].w;
+				projected_points[j].z /= projected_points[j].w;
+			}
 
             /* Invert the y-axis to have the origin on the top-left corner */
             projected_points[j].y *= -1;
+
+            // Scale into the view
+            projected_points[j].x *= 0.5f * window_width;
+            projected_points[j].y *= 0.5f * window_height;
 
             /* Translate the projected points to the middle of the screen */
             projected_points[j].x += 0.5f * window_width;
@@ -326,8 +334,8 @@ void update(void)
         //array_push(triangles_to_render, projected_triangle);
         if (num_triangles_to_render < MAX_TRIANGLES_PER_MESH) 
         {
-            triangles_to_render[num_triangles_to_render] = projected_triangle;
-            num_triangles_to_render++;
+            triangles_to_render[num_triangles_to_render++] = projected_triangle;
+            //num_triangles_to_render++;
         }
     }
 }
