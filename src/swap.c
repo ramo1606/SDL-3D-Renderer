@@ -1,17 +1,13 @@
 #include "swap.h"
 
-/* Function to swap two integers */
-void int_swap(int* a, int* b)
-{
-	int temp = *a;
-	*a = *b;
-	*b = temp;
+void int_swap(int* a, int* b) {
+    int tmp = *a;
+    *a = *b;
+    *b = tmp;
 }
 
-/* Function to swap two floats */
-void float_swap(float* a, float* b)
-{
-	float temp = *a;
-	*a = *b;
-	*b = temp;
+void float_swap(float* a, float* b) {
+    float tmp = *a;
+    *a = *b;
+    *b = tmp;
 }

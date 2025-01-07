@@ -3,25 +3,23 @@
 #include "array.h"
 #include "mesh.h"
 
-/* Global mesh variable */
 mesh_t mesh = {
     .vertices = NULL,
     .faces = NULL,
-	.rotation = { 0.0f, 0.0f, 0.0f },
-	.scale = { 1.0f, 1.0f, 1.0f },
-	.translation = { 0.0f, 0.0f, 0.0f }
+    .rotation = { 0, 0, 0 },
+    .scale = { 1.0, 1.0, 1.0 },
+    .translation = { 0, 0, 0 }
 };
 
-/* Cube vertices */
 vec3_t cube_vertices[N_CUBE_VERTICES] = {
-    {.x = -1, .y = -1, .z = -1 }, /* 1 */
-    {.x = -1, .y = 1, .z = -1 }, /* 2 */
-    {.x = 1, .y = 1, .z = -1 }, /* 3 */
-    {.x = 1, .y = -1, .z = -1 }, /* 4 */
-    {.x = 1, .y = 1, .z = 1 }, /* 5 */
-    {.x = 1, .y = -1, .z = 1 }, /* 6 */
-    {.x = -1, .y = 1, .z = 1 }, /* 7 */
-    {.x = -1, .y = -1, .z = 1 }  /* 8 */
+    {.x = -1, .y = -1, .z = -1 }, // 1
+    {.x = -1, .y = 1, .z = -1 }, // 2
+    {.x = 1, .y = 1, .z = -1 }, // 3
+    {.x = 1, .y = -1, .z = -1 }, // 4
+    {.x = 1, .y = 1, .z = 1 }, // 5
+    {.x = 1, .y = -1, .z = 1 }, // 6
+    {.x = -1, .y = 1, .z = 1 }, // 7
+    {.x = -1, .y = -1, .z = 1 }  // 8
 };
 
 face_t cube_faces[N_CUBE_FACES] = {
@@ -45,48 +43,39 @@ face_t cube_faces[N_CUBE_FACES] = {
     {.a = 6, .b = 1, .c = 4, .a_uv = { 0, 1 }, .b_uv = { 1, 0 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF }
 };
 
-/* Function to load cube mesh data */
-void load_cube_mesh_data(void)
-{
-    for (int i = 0; i < N_CUBE_VERTICES; i++)
-    {
+void load_cube_mesh_data(void) {
+    for (int i = 0; i < N_CUBE_VERTICES; i++) {
         vec3_t cube_vertex = cube_vertices[i];
         array_push(mesh.vertices, cube_vertex);
     }
-    for (int i = 0; i < N_CUBE_FACES; i++)
-    {
+    for (int i = 0; i < N_CUBE_FACES; i++) {
         face_t cube_face = cube_faces[i];
         array_push(mesh.faces, cube_face);
     }
 }
 
-/* Function to load mesh data from an OBJ file */
-void load_obj_file_data(char* filename)
-{
+void load_obj_file_data(char* filename) {
     FILE* file;
     file = fopen(filename, "r");
     char line[1024];
 
-	tex2_t* uvs = NULL;
+    tex2_t* texcoords = NULL;
 
-    while (fgets(line, 1024, file))
-    {
-        /* Vertex information */
-		if (strncmp(line, "v ", 2) == 0)		// Vertex position
-        {
+    while (fgets(line, 1024, file)) {
+        // Vertex information
+        if (strncmp(line, "v ", 2) == 0) {
             vec3_t vertex;
             sscanf(line, "v %f %f %f", &vertex.x, &vertex.y, &vertex.z);
             array_push(mesh.vertices, vertex);
         }
-		if (strncmp(line, "vt", 2) == 0)        // Texture coordinates
-        {
-			tex2_t uv;
-			sscanf(line, "vt %f %f", &uv.u, &uv.v);
-			array_push(uvs, uv);
+        // Texture coordinate information
+        if (strncmp(line, "vt ", 3) == 0) {
+            tex2_t texcoord;
+            sscanf(line, "vt %f %f", &texcoord.u, &texcoord.v);
+            array_push(texcoords, texcoord);
         }
-        /* Face information */
-		if (strncmp(line, "f ", 2) == 0)    // Face
-        {
+        // Face information
+        if (strncmp(line, "f ", 2) == 0) {
             int vertex_indices[3];
             int texture_indices[3];
             int normal_indices[3];
@@ -97,18 +86,17 @@ void load_obj_file_data(char* filename)
                 &vertex_indices[2], &texture_indices[2], &normal_indices[2]
             );
             face_t face = {
-                .a = vertex_indices[0] - 1,
-                .b = vertex_indices[1] - 1,
-				.c = vertex_indices[2] - 1,
-				.a_uv = uvs[texture_indices[0] - 1],
-				.b_uv = uvs[texture_indices[1] - 1],
-				.c_uv = uvs[texture_indices[2] - 1],
-				.color = 0xFFFFFFFF
+                .a = vertex_indices[0],
+                .b = vertex_indices[1],
+                .c = vertex_indices[2],
+                .a_uv = texcoords[texture_indices[0] - 1],
+                .b_uv = texcoords[texture_indices[1] - 1],
+                .c_uv = texcoords[texture_indices[2] - 1],
+                .color = 0xFFFFFFFF
             };
             array_push(mesh.faces, face);
         }
     }
-
-	array_free(uvs);
+    array_free(texcoords);
     fclose(file);
 }
