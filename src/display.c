@@ -33,8 +33,8 @@ bool initialize_window(void) {
     int fullscreen_width = display_mode.w;
     int fullscreen_height = display_mode.h;
 
-	window_width = fullscreen_width / 1.f;
-	window_height = fullscreen_height / 1.f;
+	window_width = fullscreen_width / 3.f;
+	window_height = fullscreen_height / 3.f;
 
     // Create a SDL Window
     window = SDL_CreateWindow(
@@ -157,6 +157,101 @@ void draw_rect(int x, int y, int width, int height, uint32_t color) {
             int current_x = x + i;
             int current_y = y + j;
             draw_pixel(current_x, current_y, color);
+        }
+    }
+}
+
+void draw_text(int x, int y, uint32_t color, char* text)
+{
+    // Very basic 5x7 font rendering - just doing basic dots
+    for (int i = 0; text[i] != '\0'; i++) {
+        char c = text[i];
+
+        // For each character, draw dots in a simple 5x7 grid pattern
+        switch (c) {
+        case '0':
+            draw_rect(x + (i * 8), y, 6, 1, color);     // top
+            draw_rect(x + (i * 8), y, 1, 7, color);     // left
+            draw_rect(x + (i * 8) + 5, y, 1, 7, color); // right
+            draw_rect(x + (i * 8), y + 6, 6, 1, color); // bottom
+            break;
+        case '1':
+            draw_rect(x + (i * 8) + 5, y, 1, 7, color); // right
+            break;
+        case '2':
+            draw_rect(x + (i * 8), y, 6, 1, color);     // top
+            draw_rect(x + (i * 8) + 5, y, 1, 4, color); // right top
+            draw_rect(x + (i * 8), y + 3, 6, 1, color); // middle
+            draw_rect(x + (i * 8), y + 3, 1, 4, color); // left bottom
+            draw_rect(x + (i * 8), y + 6, 6, 1, color); // bottom
+            break;
+        case '3':
+            draw_rect(x + (i * 8), y, 6, 1, color);     // top
+            draw_rect(x + (i * 8) + 5, y, 1, 7, color); // right
+            draw_rect(x + (i * 8), y + 3, 6, 1, color); // middle
+            draw_rect(x + (i * 8), y + 6, 6, 1, color); // bottom
+            break;
+        case '4':
+            draw_rect(x + (i * 8), y, 1, 4, color);     // left top
+            draw_rect(x + (i * 8) + 5, y, 1, 7, color); // right
+            draw_rect(x + (i * 8), y + 3, 6, 1, color); // middle
+            break;
+        case '5':
+            draw_rect(x + (i * 8), y, 6, 1, color);     // top
+            draw_rect(x + (i * 8), y, 1, 4, color);     // left top
+            draw_rect(x + (i * 8), y + 3, 6, 1, color); // middle
+            draw_rect(x + (i * 8) + 5, y + 3, 1, 4, color); // right bottom
+            draw_rect(x + (i * 8), y + 6, 6, 1, color); // bottom
+            break;
+        case '6':
+            draw_rect(x + (i * 8), y, 6, 1, color);     // top
+            draw_rect(x + (i * 8), y, 1, 7, color);     // left
+            draw_rect(x + (i * 8), y + 3, 6, 1, color); // middle
+            draw_rect(x + (i * 8) + 5, y + 3, 1, 4, color); // right bottom
+            draw_rect(x + (i * 8), y + 6, 6, 1, color); // bottom
+            break;
+        case '7':
+            draw_rect(x + (i * 8), y, 6, 1, color);     // top
+            draw_rect(x + (i * 8) + 5, y, 1, 7, color); // right
+            break;
+        case '8':
+            draw_rect(x + (i * 8), y, 6, 1, color);     // top
+            draw_rect(x + (i * 8), y, 1, 7, color);     // left
+            draw_rect(x + (i * 8) + 5, y, 1, 7, color); // right
+            draw_rect(x + (i * 8), y + 3, 6, 1, color); // middle
+            draw_rect(x + (i * 8), y + 6, 6, 1, color); // bottom
+            break;
+        case '9':
+            draw_rect(x + (i * 8), y, 6, 1, color);     // top
+            draw_rect(x + (i * 8), y, 1, 4, color);     // left top
+            draw_rect(x + (i * 8) + 5, y, 1, 7, color); // right
+            draw_rect(x + (i * 8), y + 3, 6, 1, color); // middle
+            draw_rect(x + (i * 8), y + 6, 6, 1, color); // bottom
+            break;
+        case ':':
+            draw_rect(x + (i * 8) + 2, y + 2, 2, 2, color); // top dot
+            draw_rect(x + (i * 8) + 2, y + 4, 2, 2, color); // bottom dot
+            break;
+        case ' ':
+            break;
+        case 'F':
+            draw_rect(x + (i * 8), y, 6, 1, color);     // top
+            draw_rect(x + (i * 8), y, 1, 7, color);     // left
+            draw_rect(x + (i * 8), y + 3, 5, 1, color); // middle
+            break;
+        case 'P':
+            draw_rect(x + (i * 8), y, 6, 1, color);     // top
+            draw_rect(x + (i * 8), y, 1, 7, color);     // left
+            draw_rect(x + (i * 8) + 5, y, 1, 4, color); // right top
+            draw_rect(x + (i * 8), y + 3, 6, 1, color); // middle
+            break;
+        case 'S':
+            draw_rect(x + (i * 8), y, 6, 1, color);     // top
+            draw_rect(x + (i * 8), y, 1, 4, color);     // left top
+            draw_rect(x + (i * 8), y + 3, 6, 1, color); // middle
+            draw_rect(x + (i * 8) + 5, y + 3, 1, 4, color); // right bottom
+            draw_rect(x + (i * 8), y + 6, 6, 1, color); // bottom
+            break;
         }
     }
 }
